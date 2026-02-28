@@ -186,14 +186,23 @@
                 const div = document.createElement('div');
                 div.className = 'page-card';
                 div.id = `step_page${idx}`;
-                const tasksHtml = page.tasks.map(t => `
-                    <div class="mb-5 bg-white border border-gray-100 p-4 rounded-2xl shadow-sm item-row">
-                        <p class="text-sm font-semibold text-gray-700 mb-4 leading-snug">${t.text}</p>
-                        <div class="flex flex-col gap-3">
-                            <label class="check-container"><input type="radio" name="task_${t.id}" value="PASS"><span>✔️ เป็นไปตามมาตรฐาน</span></label>
-                            <label class="check-container"><input type="radio" name="task_${t.id}" value="FAIL"><span>❌ ไม่เป็นไปตามมาตรฐาน</span></label>
-                        </div>
-                    </div>`).join('');
+                const tasksHtml = page.tasks.map(t => {
+    // เช็คว่ามีคำว่า [INFO] หรือไม่
+    const isInfo = t.text.includes("[INFO]");
+    // ลบคำว่า [INFO] ออกจากข้อความที่จะแสดง
+    const displayText = t.text.replace("[INFO]", "").trim();
+
+    return `
+    <div class="mb-5 ${isInfo ? 'bg-green-50 border-green-200' : 'bg-white border-gray-100'} border p-4 rounded-2xl shadow-sm item-row">
+        <p class="text-sm font-semibold ${isInfo ? 'text-green-800' : 'text-gray-700'} ${isInfo ? '' : 'mb-4'} leading-snug">
+            ${isInfo ? 'ℹ️ ' : ''}${displayText}
+        </p>
+        <div class="flex flex-col gap-3 ${isInfo ? 'hidden' : ''}">
+            <label class="check-container"><input type="radio" name="task_${t.id}" value="PASS"><span>✔️ เป็นไปตามมาตรฐาน</span></label>
+            <label class="check-container"><input type="radio" name="task_${t.id}" value="FAIL"><span>❌ ไม่เป็นไปตามมาตรฐาน</span></label>
+        </div>
+    </div>`;
+}).join('');
 
                 div.innerHTML = `
                     <div class="mb-3"><span class="global-green text-white text-[9px] px-3 py-1 rounded-full uppercase font-bold tracking-widest">${cat.category}</span></div>
