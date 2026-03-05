@@ -50,6 +50,11 @@ option.completed {
     background-color: #ecfdf5; 
     font-weight: bold; 
 }
+      /* ตกแต่ง Dropdown สำหรับหน้าที่เคยมีคนตรวจแล้ว (แม้จะยังไม่ครบ) */
+option.partially-completed {
+    color: #f59e0b; /* สีส้ม */
+    font-style: italic;
+}
     </style>
 </head>
 <body class="p-2 md:p-4">
@@ -241,6 +246,17 @@ option.completed {
             }
         });
     }
+  function applySync(latestSync) {
+    document.querySelectorAll('.item-row').forEach(row => {
+        const q = row.querySelector('p').innerText;
+        if (latestSync[q]) {
+            const radio = row.querySelector(`input[value="${latestSync[q]}"]`);
+            if (radio) radio.checked = true;
+        }
+    });
+    // เพิ่มบรรทัดนี้: เพื่อให้โหลดเสร็จแล้วเช็ค ✅ ทันที
+    updateDropdownStatus(); 
+}
 
     function jumpToStep(target) {
         document.getElementById(getID(currentStep)).classList.remove('active');
@@ -322,6 +338,45 @@ option.completed {
             } else {
                 opt.innerText = `📄 ${opt.innerText.replace('📄 ', '').replace('✅ ', '')}`;
                 opt.classList.remove('completed');
+            }
+        }
+    });
+}
+  function updateDropdownStatus() {
+    const topNav = document.getElementById('topNav');
+    const options = topNav.querySelectorAll('option');
+    
+    options.forEach(opt => {
+        const stepIdx = parseInt(opt.value);
+        if (stepIdx > 0 && stepIdx <= totalPagesCount) {
+            const pageDiv = document.getElementById(`step_page${stepIdx}`);
+            const allTasks = pageDiv.querySelectorAll('.item-row:not(.bg-blue-50)');
+            const completedTasks = pageDiv.querySelectorAll('input[type="radio"]:checked');
+          // แสดงชื่อผู้ตรวจล่าสุดในหน้าปัจจุบันที่กำลังเปิดอยู่
+    if (stepIdx === currentStep) {
+        const nameDisplay = document.getElementById('display_inspector_name');
+        if (nameDisplay) {
+            // ดึงชื่อจากข้อมูลล่าสุดที่ Sync มา (ถ้ามี) หรือจาก localStorage
+            const savedName = pageInspectors[currentStep] || "-";
+            nameDisplay.innerText = savedName;
+        }
+    }
+            
+            // ล้างค่าเดิมก่อน
+            opt.innerText = opt.innerText.replace('✅ ', '').replace('📄 ', '').replace('🕒 ', '');
+            opt.classList.remove('completed', 'partially-completed');
+
+            if (allTasks.length > 0 && completedTasks.length === allTasks.length) {
+                // กรณี: ตรวจครบ 100%
+                opt.innerText = `✅ ${opt.innerText}`;
+                opt.classList.add('completed');
+            } else if (completedTasks.length > 0) {
+                // กรณี: มีคนเคยตรวจไว้บ้างแล้ว (ยังไม่ครบ)
+                opt.innerText = `🕒 ${opt.innerText}`; // ใส่ไอคอนนาฬิกา หรือจะใช้ ✅ ก็ได้
+                opt.classList.add('partially-completed');
+            } else {
+                // กรณี: ยังไม่มีใครตรวจเลย
+                opt.innerText = `📄 ${opt.innerText}`;
             }
         }
     });
