@@ -39,6 +39,17 @@
     color: #374151; 
     white-space: pre-line; /* เพิ่มบรรทัดนี้: ทำให้แสดงการขึ้นบรรทัดใหม่ตามใน Sheet */
 }
+      /* 1. ทำให้ข้อความขึ้นบรรทัดใหม่ตามใน Sheet (Alt+Enter) */
+.item-row p { 
+    white-space: pre-line; 
+}
+
+/* 2. ทำให้ตัวเลือกที่ตรวจเสร็จแล้วใน Dropdown มีสีเขียว */
+option.completed { 
+    color: #059669; 
+    background-color: #ecfdf5; 
+    font-weight: bold; 
+}
     </style>
 </head>
 <body class="p-2 md:p-4">
@@ -52,7 +63,7 @@
         <img id="zoomedImg" src="" class="max-w-full max-h-full rounded-lg shadow-2xl object-contain">
     </div>
 
-    <div class="max-w-xl mx-auto bg-white shadow-2xl rounded-3xl overflow-hidden flex flex-col min-h-[95vh] relative border border-gray-100">
+    <div class="md:max-w-5xl mx-auto bg-white shadow-2xl rounded-3xl overflow-hidden flex flex-col min-h-[95vh] relative border border-gray-100">
         <div class="global-green p-4 flex justify-between items-center relative">
             <img src="https://upload.wikimedia.org/wikipedia/commons/c/c9/Global_House_Logo.svg" class="h-10 object-contain">
             <select id="topNav" onchange="jumpToStep(parseInt(this.value))" class="bg-white text-green-900 text-[11px] p-2 rounded-lg border-none outline-none max-w-[160px] font-bold shadow-sm"></select>
@@ -187,14 +198,13 @@
                 div.className = 'page-card';
                 div.id = `step_page${idx}`;
                 const tasksHtml = page.tasks.map(t => {
-    // เช็คว่ามีคำว่า [INFO] หรือไม่
+    // เช็คโหมด [INFO]
     const isInfo = t.text.includes("[INFO]");
-    // ลบคำว่า [INFO] ออกจากข้อความที่จะแสดง
     const displayText = t.text.replace("[INFO]", "").trim();
 
     return `
-    <div class="mb-5 ${isInfo ? 'bg-green-50 border-green-200' : 'bg-white border-gray-100'} border p-4 rounded-2xl shadow-sm item-row">
-        <p class="text-sm font-semibold ${isInfo ? 'text-green-800' : 'text-gray-700'} ${isInfo ? '' : 'mb-4'} leading-snug">
+    <div class="mb-5 ${isInfo ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-100'} border p-4 rounded-2xl shadow-sm item-row">
+        <p class="text-sm font-semibold ${isInfo ? 'text-blue-800' : 'text-gray-700'} ${isInfo ? '' : 'mb-4'}">
             ${isInfo ? 'ℹ️ ' : ''}${displayText}
         </p>
         <div class="flex flex-col gap-3 ${isInfo ? 'hidden' : ''}">
@@ -203,7 +213,6 @@
         </div>
     </div>`;
 }).join('');
-
                 div.innerHTML = `
                     <div class="mb-3"><span class="global-green text-white text-[9px] px-3 py-1 rounded-full uppercase font-bold tracking-widest">${cat.category}</span></div>
                     ${page.image ? `<div class="mb-6 aspect-video rounded-3xl overflow-hidden border-4 border-white shadow-lg cursor-zoom-in" onclick="openZoom('${page.image}')">
@@ -296,6 +305,30 @@
             }
         });
     };
+  function updateDropdownStatus() {
+    const topNav = document.getElementById('topNav');
+    const options = topNav.querySelectorAll('option');
+    options.forEach(opt => {
+        const stepIdx = parseInt(opt.value);
+        if (stepIdx > 0 && stepIdx <= totalPagesCount) {
+            const pageDiv = document.getElementById(`step_page${stepIdx}`);
+            // นับเฉพาะข้อที่ต้องตรวจ (ไม่นับแถบสีฟ้า [INFO])
+            const allTasks = pageDiv.querySelectorAll('.item-row:not(.bg-blue-50)');
+            const completedTasks = pageDiv.querySelectorAll('input[type="radio"]:checked');
+            
+            if (allTasks.length > 0 && completedTasks.length === allTasks.length) {
+                opt.innerText = `✅ ${opt.innerText.replace('📄 ', '').replace('✅ ', '')}`;
+                opt.classList.add('completed');
+            } else {
+                opt.innerText = `📄 ${opt.innerText.replace('📄 ', '').replace('✅ ', '')}`;
+                opt.classList.remove('completed');
+            }
+        }
+    });
+}
+  document.getElementById('checklistForm').addEventListener('change', (e) => {
+    if (e.target.type === 'radio') updateDropdownStatus();
+});
 
     initApp();
 </script>
