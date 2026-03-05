@@ -106,6 +106,22 @@ option.partially-completed {
             </div>
 
             <div id="navBar" class="mt-auto pt-6 flex justify-between items-center border-t border-gray-100 hidden">
+              <div id="navBar" class="mt-auto pt-6 flex justify-between items-center border-t border-gray-100 hidden">
+    <div class="w-full text-center mb-2 absolute -top-8 left-0">
+        <p class="text-[10px] text-gray-400">
+            ผู้ตรวจสอบหน้านี้: <span id="display_inspector_name" class="text-green-700 font-bold">-</span>
+        </p>
+    </div>
+    ```
+
+---
+
+### 2. เพิ่มส่วนบันทึกและแสดงผล (ในส่วน JavaScript)
+ก๊อปปี้ 3 ส่วนนี้ไปวางใน `<script>` ของคุณครับ:
+
+#### ก. ประกาศตัวแปรเก็บชื่อรายหน้า (วางไว้บนสุดของ Script)
+```javascript
+let pageInspectors = JSON.parse(localStorage.getItem('gh_page_inspectors')) || {};
                 <button type="button" onclick="changeStep(-1)" class="text-gray-400 font-bold text-sm">ย้อนกลับ</button>
                 <div id="pageDots" class="text-[10px] font-bold text-green-800 bg-green-50 px-4 py-1.5 rounded-full">PAGE</div>
                 <button type="button" id="nextBtn" onclick="changeStep(1)" class="global-green text-white px-8 py-3 rounded-full font-bold shadow-lg">ถัดไป</button>
@@ -266,6 +282,21 @@ option.partially-completed {
         renderUI();
         window.scrollTo(0,0);
     }
+  function jumpToStep(target) {
+    document.getElementById(getID(currentStep)).classList.remove('active');
+    currentStep = target;
+    document.getElementById(getID(currentStep)).classList.add('active');
+
+    // --- เพิ่มส่วนนี้: อัปเดตชื่อผู้ตรวจเมื่อเปลี่ยนหน้า ---
+    const inspectorName = pageInspectors[currentStep] || "-";
+    const displayElement = document.getElementById('display_inspector_name');
+    if (displayElement) displayElement.innerText = inspectorName;
+    // ----------------------------------------------
+
+    if (currentStep === totalPagesCount + 1) buildSummary();
+    renderUI();
+    window.scrollTo(0,0);
+}
 
     function changeStep(delta) { jumpToStep(currentStep + delta); }
     function getID(s) { return s === 0 ? 'step_page0' : (s === totalPagesCount + 1 ? 'step_page_final' : `step_page${s}`); }
@@ -302,24 +333,19 @@ option.partially-completed {
         document.getElementById('totalScore').innerText = `${pass} / ${total}`;
     }
 
-    document.getElementById('checklistForm').onsubmit = function(e) {
-        e.preventDefault();
-        Swal.fire({ title: 'ยืนยันบันทึก?', icon: 'question', showCancelButton: true, confirmButtonColor: '#004a23' }).then((result) => {
-            if (result.isConfirmed) {
-                Swal.fire({ title: 'กำลังส่งข้อมูล...', didOpen: () => Swal.showLoading() });
-                const details = {};
-                document.querySelectorAll('input[type="radio"]:checked').forEach(r => {
-                    details[r.closest('.item-row').querySelector('p').innerText] = r.value;
-                });
-                fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
-                    inspectorName: document.getElementById('input_name').value,
-                    role: document.getElementById('input_role').value,
-                    dept: document.getElementById('input_dept').value,
-                    score: document.getElementById('totalScore').innerText,
-                    details: details
-                })}).then(() => { Swal.fire('สำเร็จ!', 'บันทึกข้อมูลแล้ว', 'success').then(() => location.reload()); });
-            }
-        });
+    document.getElementById('checklistForm').addEventListener('change', (e) => {
+    if (e.target.type === 'radio') {
+        updateDropdownStatus(); // ฟังก์ชันเดิมของคุณ
+
+        // --- เพิ่มส่วนนี้: บันทึกชื่อคนตรวจลงในหน้านั้นๆ ---
+        const currentInspector = document.getElementById('input_name').value;
+        if (currentInspector && currentStep > 0) {
+            pageInspectors[currentStep] = currentInspector; // จำชื่อตามเลขหน้า
+            localStorage.setItem('gh_page_inspectors', JSON.stringify(pageInspectors)); // เซฟลงเครื่อง
+            document.getElementById('display_inspector_name').innerText = currentInspector; // โชว์ชื่อทันที
+        }
+    }
+});
     };
   function updateDropdownStatus() {
     const topNav = document.getElementById('topNav');
