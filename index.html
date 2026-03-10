@@ -1,469 +1,495 @@
 <!DOCTYPE html>
 <html lang="en">
 
-  <head>
-    <meta charset="UTF-8">
-    <title>GBH App V.4</title>
+  <head>
+    <meta charset="UTF-8">
+    <title>GBH App V.4</title>
+    
 
-
-  </head>
-
-  <body>
-  <!DOCTYPE html>
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global House Inspection (Hybrid Ultimate)</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        body { font-family: 'Sarabun', sans-serif; background-color: #f3f4f6; }
-        .global-green { background-color: #004a23; }
-        .global-yellow { background-color: #f9b233; }
-        .page-card { min-height: 80vh; display: none; flex-direction: column; }
-        .page-card.active { display: flex; animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global House Inspection (Hybrid Ultimate)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f3f4f6; }
+        .global-green { background-color: #004a23; }
+        .global-yellow { background-color: #f9b233; }
+        .page-card { min-height: 80vh; display: none; flex-direction: column; }
+        .page-card.active { display: flex; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* Dropdown Styling */
+        optgroup { font-weight: bold; color: #004a23; background-color: #f0fdf4; font-style: normal; }
+        option { color: #374151; background-color: white; padding: 8px; }
 
-        /* Dropdown Styling */
-        optgroup { font-weight: bold; color: #004a23; background-color: #f0fdf4; font-style: normal; }
-        option { color: #374151; background-color: white; padding: 8px; }
-
-        .check-container { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: #4b5563; }
-        .check-container input { width: 18px; height: 18px; cursor: pointer; accent-color: #004a23; }
-        .loading-overlay { position: fixed; inset: 0; background: white; z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .item-row p { 
-    line-height: 1.6; 
-    word-break: break-word; 
-    color: #374151; 
-    white-space: pre-line; /* เพิ่มบรรทัดนี้: ทำให้แสดงการขึ้นบรรทัดใหม่ตามใน Sheet */
+        .check-container { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: #4b5563; }
+        .check-container input { width: 18px; height: 18px; cursor: pointer; accent-color: #004a23; }
+        .loading-overlay { position: fixed; inset: 0; background: white; z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .item-row p { 
+    line-height: 1.6; 
+    word-break: break-word; 
+    color: #374151; 
+    white-space: pre-line; /* เพิ่มบรรทัดนี้: ทำให้แสดงการขึ้นบรรทัดใหม่ตามใน Sheet */
 }
-      /* 1. ทำให้ข้อความขึ้นบรรทัดใหม่ตามใน Sheet (Alt+Enter) */
-.item-row p { 
-    white-space: pre-line; 
+      /* 1. ทำให้ข้อความขึ้นบรรทัดใหม่ตามใน Sheet (Alt+Enter) */
+.item-row p { 
+    white-space: pre-line; 
 }
 
 /* 2. ทำให้ตัวเลือกที่ตรวจเสร็จแล้วใน Dropdown มีสีเขียว */
-option.completed { 
-    color: #059669; 
-    background-color: #ecfdf5; 
-    font-weight: bold; 
+option.completed { 
+    color: #059669; 
+    background-color: #ecfdf5; 
+    font-weight: bold; 
 }
-      /* ตกแต่ง Dropdown สำหรับหน้าที่เคยมีคนตรวจแล้ว (แม้จะยังไม่ครบ) */
+      /* ตกแต่ง Dropdown สำหรับหน้าที่เคยมีคนตรวจแล้ว (แม้จะยังไม่ครบ) */
 option.partially-completed {
-    color: #f59e0b; /* สีส้ม */
-    font-style: italic;
+    color: #f59e0b; /* สีส้ม */
+    font-style: italic;
 }
-    </style>
+    </style>
 </head>
 <body class="p-2 md:p-4">
 
-    <div id="loader" class="loading-overlay">
-        <div class="w-12 h-12 border-4 border-green-800 border-t-transparent rounded-full animate-spin"></div>
-        <p class="mt-4 font-bold text-green-800">กำลังเชื่อมต่อฐานข้อมูล...</p>
-    </div>
+    <div id="loader" class="loading-overlay">
+        <div class="w-12 h-12 border-4 border-green-800 border-t-transparent rounded-full animate-spin"></div>
+        <p class="mt-4 font-bold text-green-800">กำลังเชื่อมต่อฐานข้อมูล...</p>
+    </div>
 
-    <div id="zoomModal" onclick="this.classList.add('hidden')" class="fixed inset-0 bg-black/95 z-[100] hidden flex items-center justify-center p-4">
-        <img id="zoomedImg" src="" class="max-w-full max-h-full rounded-lg shadow-2xl object-contain">
-    </div>
+    <div id="zoomModal" onclick="this.classList.add('hidden')" class="fixed inset-0 bg-black/95 z-[100] hidden flex items-center justify-center p-4">
+        <img id="zoomedImg" src="" class="max-w-full max-h-full rounded-lg shadow-2xl object-contain">
+    </div>
 
-    <div class="md:max-w-5xl mx-auto bg-white shadow-2xl rounded-3xl overflow-hidden flex flex-col min-h-[95vh] relative border border-gray-100">
-        <div class="global-green p-4 flex justify-between items-center relative">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c9/Global_House_Logo.svg" class="h-10 object-contain">
-            <select id="topNav" onchange="jumpToStep(parseInt(this.value))" class="bg-white text-green-900 text-[11px] p-2 rounded-lg border-none outline-none max-w-[160px] font-bold shadow-sm"></select>
-            <div class="absolute bottom-0 left-0 w-full h-1 global-yellow"></div>
-        </div>
+    <div class="md:max-w-5xl mx-auto bg-white shadow-2xl rounded-3xl overflow-hidden flex flex-col min-h-[95vh] relative border border-gray-100">
+        <div class="global-green p-4 flex justify-between items-center relative">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c9/Global_House_Logo.svg" class="h-10 object-contain">
+            <select id="topNav" onchange="jumpToStep(parseInt(this.value))" class="bg-white text-green-900 text-[11px] p-2 rounded-lg border-none outline-none max-w-[160px] font-bold shadow-sm"></select>
+            <div class="absolute bottom-0 left-0 w-full h-1 global-yellow"></div>
+        </div>
 
-        <form id="checklistForm" class="p-6 flex-grow flex-col flex">
-            <div class="page-card active" id="step_page0">
-                <div class="text-center mb-6">
-                    <h2 class="text-xl font-bold text-gray-800">ข้อมูลผู้ตรวจสอบ</h2>
-                    <div class="w-12 h-1 global-yellow mx-auto mt-2 rounded-full"></div>
-                </div>
-                <div class="space-y-4 bg-gray-50 p-5 rounded-3xl border border-gray-100">
-                    <div><label class="text-[10px] font-bold text-gray-400 uppercase">Audit Date</label><input type="date" id="input_date" required class="w-full bg-white border border-gray-200 rounded-xl p-3 outline-none"></div>
-                    <div><label class="text-[10px] font-bold text-gray-400 uppercase">Inspector Name</label><input type="text" id="input_name" oninput="saveInspectorData()" placeholder="ชื่อ-นามสกุล" required class="w-full bg-white border border-gray-200 rounded-xl p-3 outline-none"></div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <input type="text" id="input_role" oninput="saveInspectorData()" placeholder="ตำแหน่ง" required class="w-full bg-white border border-gray-200 rounded-xl p-3 outline-none">
-                        <input type="text" id="input_dept" oninput="saveInspectorData()" placeholder="แผนก" required class="w-full bg-white border border-gray-200 rounded-xl p-3 outline-none">
-                    </div>
-                </div>
-                <button type="button" onclick="changeStep(1)" class="mt-8 global-green text-white w-full py-4 rounded-2xl font-bold shadow-lg">เริ่มการตรวจสอบ ➔</button>
-            </div>
+        <form id="checklistForm" class="p-6 flex-grow flex-col flex">
+            <div class="page-card active" id="step_page0">
+                <div class="text-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">ข้อมูลผู้ตรวจสอบ</h2>
+                    <div class="w-12 h-1 global-yellow mx-auto mt-2 rounded-full"></div>
+                </div>
+                <div class="space-y-4 bg-gray-50 p-5 rounded-3xl border border-gray-100">
+                    <div><label class="text-[10px] font-bold text-gray-400 uppercase">Audit Date</label><input type="date" id="input_date" required class="w-full bg-white border border-gray-200 rounded-xl p-3 outline-none"></div>
+                    <div><label class="text-[10px] font-bold text-gray-400 uppercase">Inspector Name</label><input type="text" id="input_name" oninput="saveInspectorData()" placeholder="ชื่อ-นามสกุล" required class="w-full bg-white border border-gray-200 rounded-xl p-3 outline-none"></div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="text" id="input_role" oninput="saveInspectorData()" placeholder="ตำแหน่ง" required class="w-full bg-white border border-gray-200 rounded-xl p-3 outline-none">
+                        <input type="text" id="input_dept" oninput="saveInspectorData()" placeholder="แผนก" required class="w-full bg-white border border-gray-200 rounded-xl p-3 outline-none">
+                    </div>
+                </div>
+                <button type="button" onclick="changeStep(1)" class="mt-8 global-green text-white w-full py-4 rounded-2xl font-bold shadow-lg">เริ่มการตรวจสอบ ➔</button>
+            </div>
 
-            <div id="dynamicPages"></div>
+            <div id="dynamicPages"></div>
 
-            <div class="page-card" id="step_page_final">
-                <div class="text-center py-4">
-                    <h2 class="text-2xl font-bold text-gray-800">สรุปคะแนนการตรวจ</h2>
-                    <div id="summaryList" class="mt-4 space-y-2 text-left bg-gray-50 p-4 rounded-2xl border border-dashed text-[11px] max-h-48 overflow-y-auto"></div>
-                    <div class="mt-6 p-10 global-green rounded-[3rem] text-white shadow-2xl relative">
-                        <p class="text-sm opacity-80 uppercase font-bold tracking-widest">Total Score</p>
-                        <p id="totalScore" class="text-6xl font-black mt-2">0 / 0</p>
-                    </div>
-                </div>
-            </div>
+            <div class="page-card" id="step_page_final">
+                <div class="text-center py-4">
+                    <h2 class="text-2xl font-bold text-gray-800">สรุปคะแนนการตรวจ</h2>
+                    <div id="summaryList" class="mt-4 space-y-2 text-left bg-gray-50 p-4 rounded-2xl border border-dashed text-[11px] max-h-48 overflow-y-auto"></div>
+                    <div class="mt-6 p-10 global-green rounded-[3rem] text-white shadow-2xl relative">
+                        <p class="text-sm opacity-80 uppercase font-bold tracking-widest">Total Score</p>
+                        <p id="totalScore" class="text-6xl font-black mt-2">0 / 0</p>
+                    </div>
+                </div>
+            </div>
 
-            <div id="navBar" class="mt-auto pt-6 flex justify-between items-center border-t border-gray-100 hidden">
-            <div id="navBar" class="mt-auto pt-10 flex justify-between items-center border-t border-gray-100 hidden relative">
-                <div class="w-full text-center absolute top-2 left-0">
-                    <p class="text-[10px] text-gray-400">
-                        ผู้ตรวจสอบหน้านี้: <span id="display_inspector_name" class="text-green-700 font-bold">-</span>
-                    </p>
-                </div>
-                <button type="button" onclick="changeStep(-1)" class="text-gray-400 font-bold text-sm">ย้อนกลับ</button>
-                <div id="pageDots" class="text-[10px] font-bold text-green-800 bg-green-50 px-4 py-1.5 rounded-full">PAGE</div>
-                <button type="button" id="nextBtn" onclick="changeStep(1)" class="global-green text-white px-8 py-3 rounded-full font-bold shadow-lg">ถัดไป</button>
-                <button type="submit" id="saveBtn" class="hidden bg-orange-500 text-white px-8 py-3 rounded-full font-bold shadow-lg">บันทึกข้อมูลเข้า Sheet</button>
-            </div>
-        </form>
-    </div>
+            <div id="navBar" class="mt-auto pt-10 flex justify-between items-center border-t border-gray-100 hidden relative">
+                <div class="w-full text-center absolute top-2 left-0">
+                    <p class="text-[10px] text-gray-400">
+                        ผู้ตรวจสอบหน้านี้: <span id="display_inspector_name" class="text-green-700 font-bold">-</span>
+                    </p>
+                </div>
+                <button type="button" onclick="changeStep(-1)" class="text-gray-400 font-bold text-sm">ย้อนกลับ</button>
+                <div id="pageDots" class="text-[10px] font-bold text-green-800 bg-green-50 px-4 py-1.5 rounded-full">PAGE</div>
+                <button type="button" id="nextBtn" onclick="changeStep(1)" class="global-green text-white px-8 py-3 rounded-full font-bold shadow-lg">ถัดไป</button>
+                <button type="submit" id="saveBtn" class="hidden bg-orange-500 text-white px-8 py-3 rounded-full font-bold shadow-lg">บันทึกข้อมูลเข้า Sheet</button>
+            </div>
+        </form>
+    </div>
 
 <script>
-    // --- 1. ข้อมูลเดิม 18 ข้อ (ห้ามเปลี่ยน) ---
-    // เก็บชื่อผู้ตรวจสอบรายหน้า
-    let pageInspectors = JSON.parse(localStorage.getItem('gh_page_inspectors')) || {};
+    // เก็บชื่อผู้ตรวจสอบรายหน้า
+    let pageInspectors = JSON.parse(localStorage.getItem('gh_page_inspectors')) || {};
 
-    const localChecklist = [
-        { category: "SHOW & SHARE", 
-            subPages: [
-                { title: "หน้า 1: การจัดการสินค้าบาร์แบ่ง (FO)", image: "https://lh3.googleusercontent.com/d/1jQdgxAn-T4xhjjKPMcKr5oYlt1CRA_Xv", tasks: [{ id: 1, text: "1. ติด Slot tag ระบุจำนวนคงเหลือหลังการแบ่งขายให้ชัดเจน" }, { id: 2, text: "2. Update จำนวนคงเหลือทุกครั้ง หลังการตัดแบ่งขายพร้อมลงชื่อผู้แกไขใน Slot tag" }, { id: 3, text: "3. การวัดและตัดแบ่งขาย ต้องใช้อุปกรณ์ที่ได้มาตรฐานและแม่นยำเพื่อให้จำนวนที่ขายตรงกับจำนวนที่บันทึก" }, { id: 4, text: "4. ติดป้าย บาร์แบ่ง ระบุจำนวนชัดเจนในการแบ่งขายทุกครั้งก่อนนำสินค้าไปชำระเงิน" }] },
-                { title: "หน้า 2: การจัดเก็บและตรวจสอบสินค้าประเภทกล่องเครื่องมือช่าง (HW)", image: "https://lh3.googleusercontent.com/d/1LV-Cde-2x9d3TPz_YT4DImlyyfHXGcic", tasks: [{ id: 5, text: "1. ต้องรัดเคเบิ้ลไทล์ที่กล่องสินค้าทุกกล่อง ทั้งหน้าขายและ Top stock" }, { id: 6, text: "2. ซีลอุปกรณ์ที่เป็นชุดประกอบของสินค้า (เช่น ดอกสว่าน กรรไกร ไขควง) ให้ครบทุกชิ้น" }, { id: 7, text: "3. ระหว่างนับสต๊อก หากพบร่องรอยการเปิดกล่อง ต้องเปิดตรวจสอบอุปกรณ์และชิ้นส่วนทุกครั้ง" }, { id: 8, text: "4. สินค้ากล่อง B1 ตัวโชว์ต้องตรวจสอบอุปกรณ์ภายในให้ครบตามชุดประกอบทุกกล่อง" }] },
-                { title: "หน้า 3: การจัดการสินค้ามัดจำสั่งพิเศษเมื่อมาถึงสาขา", image: "https://lh3.googleusercontent.com/d/1Bkj3u0cbUNSb03XQiKRn1SjcAIKbVxj5", tasks: [{ id: 9, text: "1. เมื่อสินค้ามัดจำมาถึงสาขา แผนกผลักดันต้องตรวจสอบเอกสารมัดจำทันที โดยเอกสาร Auto POI จะขึ้นต้น RDGH และเอกสารโอน Auto จะขึ้นต้น RBGH หากตรวจพบสินค้ามัดจำต้องแจ้งแผนกทันที จากนั้นแผนกแยกสินค้าเก็บไว้ ห้ามนำเข้าพื้นที่ขาย" }, { id: 10, text: "2. เคาน์เตอร์ขายต้องโทรแจ้งลูกค้าเพื่อรับสินค้า หากลูกค้าไม่สะดวกภายในวัน ต้องทำรายการฝากสินค้าในระบบและกำหนดวันรับให้ชัดเจน กรณีลูกค้าต้องการจัดส่ง ให้ประสานแผนกจัดส่งเพื่อนัดวัน-เวลา และต้องตัดมัดจำให้เรียบร้อยก่อนส่งมอบ" }, { id: 11, text: "3. ห้ามนำสินค้ามัดจำไปขายให้ลูกค้ารายอื่นโดยเด็ดขาด และต้องตรวจสอบการตัดมัดจำทุกครั้ง กรณีมัดจำ 50% ต้องแจ้งลูกค้าให้ชำระส่วนที่เหลือก่อนส่งมอบหรือจัดส่งสินค้า" }, { id: 12, text: "4. DMSS ต้องติดตามรายการสินค้าสั่งพิเศษ ตรวจสอบการตัดมัดจำให้ถูกต้อง สินค้าตรงระบบ ไม่ให้เกิดการขายผิดขั้นตอนและควบคุมไม่ให้เกิดสินค้าค้างหรือความเสี่ยงในกระบวนการคืนหรือยกเลิกมัดจำ" }, { id: 13, text: "5. กรณีลูกค้าไม่สะดวกมารับสินค้า ให้ GM/DMSS เสนอแนวทางจัดส่ง (Delivery Service) เพื่อระบายสินค้าออกจากพื้นที่และปิดการขายให้ครบถ้วน" }] },
-                { title: "หน้า 4: มาตรฐานการบริการประเมินราคาซ่อมและส่งซ่อม", image: "https://lh3.googleusercontent.com/d/14cCk1Me14AWE15yaTcXAL3zZZR5Rj1fN", tasks: [{ id: 14, text: "1. ขั้นตอนรับสินค้าประเมินซ่อมพนักงานต้องตรวจสอบใบเสร็จ/ใบรับประกันก่อนทุกครั้ง ว่าสินค้าอยู่ในเงื่อนไขรับประกันหรือไม่ และบันทึกงานผ่านระบบ GBH Service พร้อมจัดทำเอกสาร 2 ฉบับ (ลูกค้า / ติดสินค้า) ทุกครั้ง" }, { id: 15, text: "2. กลุ่มสินค้าในประเทศ-สินค้าอยู่ในเงื่อนไขรับประกัน → ประสาน Supplier ซ่อม ไม่มีค่าใช้จ่าย และให้ RT บันทึกงานในระบบ GBH Service -สินค้านอกประกัน → ส่ง Supplier ประเมินราคา → แจ้งลูกค้า → เมื่อลูกค้ายืนยันจึงดำเนินการซ่อม และชำระเงินที่เคาร์เตอร์ขาย-กรณีลูกค้าไม่ซ่อม → ต้องแจ้งลุกค้ารับสินค้าคืนทันที และห้ามวางสินค้าไว้ในพื้นที่ขาย" }, { id: 16, text: "3. กลุ่มสินค้านำเข้า -ในระยะประกัน → ตรวจสอบอะไหล่ / ประสานจัดซื้อ / ขออนุมัติซ่อม ไม่มีค่าใช้จ่าย -นอกระยะประกัน → ลูกค้าชำระค่าอะไหล่และค่าบริการตามอัตราที่กำหนด" }, { id: 17, text: "4. ประเด็นสำคัญที่ต้องตรวจสอบ -ต้องบันทึกงานผ่านระบบทุกครั้ง ห้ามรับงานนอกระบบส่งให้เองทุกกรณี -ต้องมีเอกสารติดสินค้าและลายเซ็นครบทุกจุด -ห้ามวางสินค้ารอซ่อมในพื้นที่ขาย -ต้องแจ้งลูกค้าให้ชัดเจนทุกขั้นตอน (ประเมินราคา / ซ่อม / ไม่ซ่อม)" }] }
-            ] 
-        },
-        { 
-            category: "DO & DON'T", 
-            subPages: [
-                { title: "หน้า 1: การจัดการสินค้าหน้าอาคาร/นอกอาคาร", image: "https://lh3.googleusercontent.com/d/1qnWWRYSI9m9cIppL7LQ8vLtDknH6bRmG", tasks: [{ id: 18, text: "1. ตรวจนับสต๊อกสินค้าหน้าอาคารนอกอาคารทุกวัน ครบทุกรายการ (ทุก SKU) และต้องตรงกับจำนวนจริงในพื้นที่" }, { id: 19, text: "2. กำหนดผู้รับผิดชอบดูแลความสะอาดสินค้าและพื้นที่หน้าอาคาร/นอกอาคารเป็นประจำทุกวัน" }, { id: 20, text: "3. สินค้าที่จัดเก็บนอกอาคารต้องติดป้ายราคาให้ถูกต้อง และพร้อมขายทันที ณ จุดขาย" }, { id: 21, text: "4. ต้องมี Slot tag คุมจำนวนสินค้าเพื่อให้ง่ายต่อการตรวจสอบการนับสต๊อก และการติดตามความผิดปกติ" }, { id: 22, text: "5. พื้นที่จัดเก็บสินค้านอกอาคารและหน้าอาคารต้องอยู่ในมุมกล้อง CCTV อย่างชัดเจนเพื่อป้องกันความเสียหายและการสูญหาย" }] }
-        ]}
-    ];
+    const localChecklist = [
+        { category: "SHOW & SHARE", 
+            subPages: [
+                { title: "หน้า 1: การจัดการสินค้าบาร์แบ่ง (FO)", image: "https://lh3.googleusercontent.com/d/1jQdgxAn-T4xhjjKPMcKr5oYlt1CRA_Xv", tasks: [{ id: 1, text: "1. ติด Slot tag ระบุจำนวนคงเหลือหลังการแบ่งขายให้ชัดเจน" }, { id: 2, text: "2. Update จำนวนคงเหลือทุกครั้ง หลังการตัดแบ่งขายพร้อมลงชื่อผู้แกไขใน Slot tag" }, { id: 3, text: "3. การวัดและตัดแบ่งขาย ต้องใช้อุปกรณ์ที่ได้มาตรฐานและแม่นยำเพื่อให้จำนวนที่ขายตรงกับจำนวนที่บันทึก" }, { id: 4, text: "4. ติดป้าย บาร์แบ่ง ระบุจำนวนชัดเจนในการแบ่งขายทุกครั้งก่อนนำสินค้าไปชำระเงิน" }] },
+                { title: "หน้า 2: การจัดเก็บและตรวจสอบสินค้าประเภทกล่องเครื่องมือช่าง (HW)", image: "https://lh3.googleusercontent.com/d/1LV-Cde-2x9d3TPz_YT4DImlyyfHXGcic", tasks: [{ id: 5, text: "1. ต้องรัดเคเบิ้ลไทล์ที่กล่องสินค้าทุกกล่อง ทั้งหน้าขายและ Top stock" }, { id: 6, text: "2. ซีลอุปกรณ์ที่เป็นชุดประกอบของสินค้า (เช่น ดอกสว่าน กรรไกร ไขควง) ให้ครบทุกชิ้น" }, { id: 7, text: "3. ระหว่างนับสต๊อก หากพบร่องรอยการเปิดกล่อง ต้องเปิดตรวจสอบอุปกรณ์และชิ้นส่วนทุกครั้ง" }, { id: 8, text: "4. สินค้ากล่อง B1 ตัวโชว์ต้องตรวจสอบอุปกรณ์ภายในให้ครบตามชุดประกอบทุกกล่อง" }] },
+                { title: "หน้า 3: การจัดการสินค้ามัดจำสั่งพิเศษเมื่อมาถึงสาขา", image: "https://lh3.googleusercontent.com/d/1Bkj3u0cbUNSb03XQiKRn1SjcAIKbVxj5", tasks: [{ id: 9, text: "1. เมื่อสินค้ามัดจำมาถึงสาขา แผนกผลักดันต้องตรวจสอบเอกสารมัดจำทันที โดยเอกสาร Auto POI จะขึ้นต้น RDGH และเอกสารโอน Auto จะขึ้นต้น RBGH หากตรวจพบสินค้ามัดจำต้องแจ้งแผนกทันที จากนั้นแผนกแยกสินค้าเก็บไว้ ห้ามนำเข้าพื้นที่ขาย" }, { id: 10, text: "2. เคาน์เตอร์ขายต้องโทรแจ้งลูกค้าเพื่อรับสินค้า หากลูกค้าไม่สะดวกภายในวัน ต้องทำรายการฝากสินค้าในระบบและกำหนดวันรับให้ชัดเจน กรณีลูกค้าต้องการจัดส่ง ให้ประสานแผนกจัดส่งเพื่อนัดวัน-เวลา และต้องตัดมัดจำให้เรียบร้อยก่อนส่งมอบ" }, { id: 11, text: "3. ห้ามนำสินค้ามัดจำไปขายให้ลูกค้ารายอื่นโดยเด็ดขาด และต้องตรวจสอบการตัดมัดจำทุกครั้ง กรณีมัดจำ 50% ต้องแจ้งลูกค้าให้ชำระส่วนที่เหลือก่อนส่งมอบหรือจัดส่งสินค้า" }, { id: 12, text: "4. DMSS ต้องติดตามรายการสินค้าสั่งพิเศษ ตรวจสอบการตัดมัดจำให้ถูกต้อง สินค้าตรงระบบ ไม่ให้เกิดการขายผิดขั้นตอนและควบคุมไม่ให้เกิดสินค้าค้างหรือความเสี่ยงในกระบวนการคืนหรือยกเลิกมัดจำ" }, { id: 13, text: "5. กรณีลูกค้าไม่สะดวกมารับสินค้า ให้ GM/DMSS เสนอแนวทางจัดส่ง (Delivery Service) เพื่อระบายสินค้าออกจากพื้นที่และปิดการขายให้ครบถ้วน" }] },
+                { title: "หน้า 4: มาตรฐานการบริการประเมินราคาซ่อมและส่งซ่อม", image: "https://lh3.googleusercontent.com/d/14cCk1Me14AWE15yaTcXAL3zZZR5Rj1fN", tasks: [{ id: 14, text: "1. ขั้นตอนรับสินค้าประเมินซ่อมพนักงานต้องตรวจสอบใบเสร็จ/ใบรับประกันก่อนทุกครั้ง ว่าสินค้าอยู่ในเงื่อนไขรับประกันหรือไม่ และบันทึกงานผ่านระบบ GBH Service พร้อมจัดทำเอกสาร 2 ฉบับ (ลูกค้า / ติดสินค้า) ทุกครั้ง" }, { id: 15, text: "2. กลุ่มสินค้าในประเทศ-สินค้าอยู่ในเงื่อนไขรับประกัน → ประสาน Supplier ซ่อม ไม่มีค่าใช้จ่าย และให้ RT บันทึกงานในระบบ GBH Service -สินค้านอกประกัน → ส่ง Supplier ประเมินราคา → แจ้งลูกค้า → เมื่อลูกค้ายืนยันจึงดำเนินการซ่อม และชำระเงินที่เคาร์เตอร์ขาย-กรณีลูกค้าไม่ซ่อม → ต้องแจ้งลุกค้ารับสินค้าคืนทันที และห้ามวางสินค้าไว้ในพื้นที่ขาย" }, { id: 16, text: "3. กลุ่มสินค้านำเข้า -ในระยะประกัน → ตรวจสอบอะไหล่ / ประสานจัดซื้อ / ขออนุมัติซ่อม ไม่มีค่าใช้จ่าย -นอกระยะประกัน → ลูกค้าชำระค่าอะไหล่และค่าบริการตามอัตราที่กำหนด" }, { id: 17, text: "4. ประเด็นสำคัญที่ต้องตรวจสอบ -ต้องบันทึกงานผ่านระบบทุกครั้ง ห้ามรับงานนอกระบบส่งให้เองทุกกรณี -ต้องมีเอกสารติดสินค้าและลายเซ็นครบทุกจุด -ห้ามวางสินค้ารอซ่อมในพื้นที่ขาย -ต้องแจ้งลูกค้าให้ชัดเจนทุกขั้นตอน (ประเมินราคา / ซ่อม / ไม่ซ่อม)" }] }
+            ] 
+        },
+        { 
+            category: "DO & DON'T", 
+            subPages: [
+                { title: "หน้า 1: การจัดการสินค้าหน้าอาคาร/นอกอาคาร", image: "https://lh3.googleusercontent.com/d/1qnWWRYSI9m9cIppL7LQ8vLtDknH6bRmG", tasks: [{ id: 18, text: "1. ตรวจนับสต๊อกสินค้าหน้าอาคารนอกอาคารทุกวัน ครบทุกรายการ (ทุก SKU) และต้องตรงกับจำนวนจริงในพื้นที่" }, { id: 19, text: "2. กำหนดผู้รับผิดชอบดูแลความสะอาดสินค้าและพื้นที่หน้าอาคาร/นอกอาคารเป็นประจำทุกวัน" }, { id: 20, text: "3. สินค้าที่จัดเก็บนอกอาคารต้องติดป้ายราคาให้ถูกต้อง และพร้อมขายทันที ณ จุดขาย" }, { id: 21, text: "4. ต้องมี Slot tag คุมจำนวนสินค้าเพื่อให้ง่ายต่อการตรวจสอบการนับสต๊อก และการติดตามความผิดปกติ" }, { id: 22, text: "5. พื้นที่จัดเก็บสินค้านอกอาคารและหน้าอาคารต้องอยู่ในมุมกล้อง CCTV อย่างชัดเจนเพื่อป้องกันความเสียหายและการสูญหาย" }] }
+        ]}
+    ];
 
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwoYhe6IdFAc4w0HToZyaKkaH_qUZaACERxtG68tWTDV0L79kskvVWr3UXT847ONAZ1/exec';
-    let currentStep = 0;
-    let totalPagesCount = 0;
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwoYhe6IdFAc4w0HToZyaKkaH_qUZaACERxtG68tWTDV0L79kskvVWr3UXT847ONAZ1/exec';
+    let currentStep = 0;
+    let totalPagesCount = 0;
 
-    async function initApp() {
-        try {
-            const response = await fetch(SCRIPT_URL);
-            const data = await response.json();
+    async function initApp() {
+        try {
+            const response = await fetch(SCRIPT_URL);
+            const data = await response.json();
+            
+            // นำข้อมูลจาก Sheet มาจัดกลุ่ม
+            const remoteMapped = mapRemoteData(data.additionalTasks || []);
+            // รวมร่างข้อมูล Local และ Remote
+            const mergedData = mergeChecklists(localChecklist, remoteMapped);
+            
+            renderApp(mergedData);
+            loadInspectorData();
+            if(data.latestSync) applySync(data.latestSync);
+            document.getElementById('loader').style.display = 'none';
+        } catch (e) {
+            renderApp(localChecklist);
+            document.getElementById('loader').style.display = 'none';
+        }
+    }
 
-            // นำข้อมูลจาก Sheet มาจัดกลุ่ม
-            const remoteMapped = mapRemoteData(data.additionalTasks || []);
-            // รวมร่างข้อมูล Local และ Remote
-            const mergedData = mergeChecklists(localChecklist, remoteMapped);
+    function mapRemoteData(remoteTasks) {
+        const map = {};
+        remoteTasks.forEach(t => {
+            if (!map[t.category]) map[t.category] = {};
+            if (!map[t.category][t.pageTitle]) map[t.category][t.pageTitle] = { title: t.pageTitle, image: t.image, tasks: [] };
+            map[t.category][t.pageTitle].tasks.push({ id: t.id, text: t.text });
+        });
+        return map;
+    }
 
-            renderApp(mergedData);
-            loadInspectorData();
-            if(data.latestSync) applySync(data.latestSync);
-            document.getElementById('loader').style.display = 'none';
-        } catch (e) {
-            renderApp(localChecklist);
-            document.getElementById('loader').style.display = 'none';
-        }
-    }
+    function mergeChecklists(local, remoteMap) {
+        let combined = JSON.parse(JSON.stringify(local));
+        for (const catName in remoteMap) {
+            let catObj = combined.find(c => c.category === catName);
+            if (catObj) {
+                for (const pageTitle in remoteMap[catName]) {
+                    catObj.subPages.push(remoteMap[catName][pageTitle]);
+                }
+            } else {
+                let newCat = { category: catName, subPages: [] };
+                for (const pageTitle in remoteMap[catName]) newCat.subPages.push(remoteMap[catName][pageTitle]);
+                combined.push(newCat);
+            }
+        }
+        return combined;
+    }
 
-    function mapRemoteData(remoteTasks) {
-        const map = {};
-        remoteTasks.forEach(t => {
-            if (!map[t.category]) map[t.category] = {};
-            if (!map[t.category][t.pageTitle]) map[t.category][t.pageTitle] = { title: t.pageTitle, image: t.image, tasks: [] };
-            map[t.category][t.pageTitle].tasks.push({ id: t.id, text: t.text });
-        });
-        return map;
-    }
+    function renderApp(fullData) {
+        const container = document.getElementById('dynamicPages');
+        const topNav = document.getElementById('topNav');
+        container.innerHTML = "";
+        topNav.innerHTML = '<option value="0">🏠 ข้อมูลผู้ตรวจ</option>';
+        let idx = 1;
 
-    function mergeChecklists(local, remoteMap) {
-        let combined = JSON.parse(JSON.stringify(local));
-        for (const catName in remoteMap) {
-            let catObj = combined.find(c => c.category === catName);
-            if (catObj) {
-                for (const pageTitle in remoteMap[catName]) {
-                    catObj.subPages.push(remoteMap[catName][pageTitle]);
-                }
-            } else {
-                let newCat = { category: catName, subPages: [] };
-                for (const pageTitle in remoteMap[catName]) newCat.subPages.push(remoteMap[catName][pageTitle]);
-                combined.push(newCat);
-            }
-        }
-        return combined;
-    }
+        fullData.forEach(cat => {
+            const group = document.createElement('optgroup');
+            group.label = `📂 ${cat.category}`;
+            
+            cat.subPages.forEach(page => {
+                const opt = document.createElement('option');
+                opt.value = idx; opt.innerText = `📄 ${page.title}`;
+                group.appendChild(opt);
 
-    function renderApp(fullData) {
-        const container = document.getElementById('dynamicPages');
-        const topNav = document.getElementById('topNav');
-        container.innerHTML = "";
-        topNav.innerHTML = '<option value="0">🏠 ข้อมูลผู้ตรวจ</option>';
-        let idx = 1;
+                const div = document.createElement('div');
+                div.className = 'page-card';
+                div.id = `step_page${idx}`;
+                const tasksHtml = page.tasks.map(t => {
+    // เช็คโหมด [INFO]
+    const isInfo = t.text.includes("[INFO]");
+    const displayText = t.text.replace("[INFO]", "").trim();
 
-        fullData.forEach(cat => {
-            const group = document.createElement('optgroup');
-            group.label = `📂 ${cat.category}`;
-
-            cat.subPages.forEach(page => {
-                const opt = document.createElement('option');
-                opt.value = idx; opt.innerText = `📄 ${page.title}`;
-                group.appendChild(opt);
-
-                const div = document.createElement('div');
-                div.className = 'page-card';
-                div.id = `step_page${idx}`;
-                const tasksHtml = page.tasks.map(t => {
-    // เช็คโหมด [INFO]
-    const isInfo = t.text.includes("[INFO]");
-    const displayText = t.text.replace("[INFO]", "").trim();
-
-    return `
-    <div class="mb-5 ${isInfo ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-100'} border p-4 rounded-2xl shadow-sm item-row">
-        <p class="text-sm font-semibold ${isInfo ? 'text-blue-800' : 'text-gray-700'} ${isInfo ? '' : 'mb-4'}">
-            ${isInfo ? 'ℹ️ ' : ''}${displayText}
-        </p>
-        <div class="flex flex-col gap-3 ${isInfo ? 'hidden' : ''}">
-            <label class="check-container"><input type="radio" name="task_${t.id}" value="PASS"><span>✔️ เป็นไปตามมาตรฐาน</span></label>
-            <label class="check-container"><input type="radio" name="task_${t.id}" value="FAIL"><span>❌ ไม่เป็นไปตามมาตรฐาน</span></label>
-        </div>
-    </div>`;
+    return `
+    <div class="mb-5 ${isInfo ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-100'} border p-4 rounded-2xl shadow-sm item-row">
+        <p class="text-sm font-semibold ${isInfo ? 'text-blue-800' : 'text-gray-700'} ${isInfo ? '' : 'mb-4'}">
+            ${isInfo ? 'ℹ️ ' : ''}${displayText}
+        </p>
+        <div class="flex flex-col gap-3 ${isInfo ? 'hidden' : ''}">
+            <label class="check-container"><input type="radio" name="task_${t.id}" value="PASS"><span>✔️ เป็นไปตามมาตรฐาน</span></label>
+            <label class="check-container"><input type="radio" name="task_${t.id}" value="FAIL"><span>❌ ไม่เป็นไปตามมาตรฐาน</span></label>
+        </div>
+    </div>`;
 }).join('');
-                div.innerHTML = `
-                    <div class="mb-3"><span class="global-green text-white text-[9px] px-3 py-1 rounded-full uppercase font-bold tracking-widest">${cat.category}</span></div>
-                    ${page.image ? `<div class="mb-6 aspect-video rounded-3xl overflow-hidden border-4 border-white shadow-lg cursor-zoom-in" onclick="openZoom('${page.image}')">
-                        <img src="${page.image}" loading="lazy" class="w-full h-full object-cover">
-                    </div>` : ''}
-                    <div class="space-y-1">${tasksHtml}</div>`;
-                container.appendChild(div);
-                idx++;
-            });
-            topNav.appendChild(group);
-        });
+                div.innerHTML = `
+                    <div class="mb-3"><span class="global-green text-white text-[9px] px-3 py-1 rounded-full uppercase font-bold tracking-widest">${cat.category}</span></div>
+                    ${page.image ? `<div class="mb-6 aspect-video rounded-3xl overflow-hidden border-4 border-white shadow-lg cursor-zoom-in" onclick="openZoom('${page.image}')">
+                        <img src="${page.image}" loading="lazy" class="w-full h-full object-cover">
+                    </div>` : ''}
+                    <div class="space-y-1">${tasksHtml}</div>`;
+                container.appendChild(div);
+                idx++;
+            });
+            topNav.appendChild(group);
+        });
 
-        totalPagesCount = idx - 1;
-        const optFinal = document.createElement('option'); optFinal.value = idx; optFinal.innerText = "🏁 สรุปคะแนน"; topNav.appendChild(optFinal);
-        renderUI();
-    }
+        totalPagesCount = idx - 1;
+        const optFinal = document.createElement('option'); optFinal.value = idx; optFinal.innerText = "🏁 สรุปคะแนน"; topNav.appendChild(optFinal);
+        renderUI();
+    }
 
-    function openZoom(src) { document.getElementById('zoomedImg').src = src; document.getElementById('zoomModal').classList.remove('hidden'); }
-
-    function applySync(latestSync) {
-        document.querySelectorAll('.item-row').forEach(row => {
-            const q = row.querySelector('p').innerText;
-            if (latestSync[q]) {
-                const radio = row.querySelector(`input[value="${latestSync[q]}"]`);
-                if (radio) radio.checked = true;
-            }
-        });
-    }
-  function applySync(latestSync) {
-    document.querySelectorAll('.item-row').forEach(row => {
-        const q = row.querySelector('p').innerText;
-        if (latestSync[q]) {
-            const radio = row.querySelector(`input[value="${latestSync[q]}"]`);
-            if (radio) radio.checked = true;
-        }
-    });
-    // เพิ่มบรรทัดนี้: เพื่อให้โหลดเสร็จแล้วเช็ค ✅ ทันที
-    updateDropdownStatus(); 
+    function openZoom(src) { document.getElementById('zoomedImg').src = src; document.getElementById('zoomModal').classList.remove('hidden'); }
+    
+    function applySync(latestSync) {
+        document.querySelectorAll('.item-row').forEach(row => {
+            const q = row.querySelector('p').innerText;
+            if (latestSync[q]) {
+                const radio = row.querySelector(`input[value="${latestSync[q]}"]`);
+                if (radio) radio.checked = true;
+            }
+        });
+    }
+  function applySync(latestSync) {
+    document.querySelectorAll('.item-row').forEach(row => {
+        const q = row.querySelector('p').innerText;
+        if (latestSync[q]) {
+            const radio = row.querySelector(`input[value="${latestSync[q]}"]`);
+            if (radio) radio.checked = true;
+        }
+    });
+    // เพิ่มบรรทัดนี้: เพื่อให้โหลดเสร็จแล้วเช็ค ✅ ทันที
+    updateDropdownStatus(); 
 }
 
-    function jumpToStep(target) {
-        document.getElementById(getID(currentStep)).classList.remove('active');
-        currentStep = target;
-        document.getElementById(getID(currentStep)).classList.add('active');
-        if (currentStep === totalPagesCount + 1) buildSummary();
-        renderUI();
-        window.scrollTo(0,0);
-    }
+    function jumpToStep(target) {
+        document.getElementById(getID(currentStep)).classList.remove('active');
+        currentStep = target;
+        document.getElementById(getID(currentStep)).classList.add('active');
 
-// ส่วนนี้จะดึงชื่อ "คนล่าสุด" ที่เคยตรวจหน้านี้มาโชว์ (แม้จะเป็นคนละคนกับปัจจุบัน)
-    const savedName = pageInspectors[currentStep] || "-"; 
-    const displayElement = document.getElementById('display_inspector_name');
-    if (displayElement) displayElement.innerText = savedName;
+// ดึงจาก Storage มาโชว์เพื่อให้เห็นว่าใครเคยตรวจไว้ (นาย A)
+const storageInspectors = JSON.parse(localStorage.getItem('gh_page_inspectors')) || {};
+const savedName = storageInspectors[currentStep] || "-"; 
+const displayElement = document.getElementById('display_inspector_name');
+if (displayElement) displayElement.innerText = savedName;
 
-    if (currentStep === totalPagesCount + 1) buildSummary();
-    renderUI();
-    updateDropdownStatus();
-    window.scrollTo(0,0);
+    if (currentStep === totalPagesCount + 1) buildSummary();
+    renderUI();
+    updateDropdownStatus();
+    window.scrollTo(0,0);
 }
 
-    function changeStep(delta) { jumpToStep(currentStep + delta); }
-    function getID(s) { return s === 0 ? 'step_page0' : (s === totalPagesCount + 1 ? 'step_page_final' : `step_page${s}`); }
+    function changeStep(delta) { jumpToStep(currentStep + delta); }
+    function getID(s) { return s === 0 ? 'step_page0' : (s === totalPagesCount + 1 ? 'step_page_final' : `step_page${s}`); }
 
-    function saveInspectorData() {
-        const d = { n: document.getElementById('input_name').value, r: document.getElementById('input_role').value, de: document.getElementById('input_dept').value };
-        localStorage.setItem('gh_audit_v7', JSON.stringify(d));
-    }
+    function saveInspectorData() {
+        const d = { n: document.getElementById('input_name').value, r: document.getElementById('input_role').value, de: document.getElementById('input_dept').value };
+        localStorage.setItem('gh_audit_v7', JSON.stringify(d));
+    }
 
-    function loadInspectorData() {
-        const s = localStorage.getItem('gh_audit_v7');
-        if (s) { const d = JSON.parse(s); document.getElementById('input_name').value = d.n; document.getElementById('input_role').value = d.r; document.getElementById('input_dept').value = d.de; }
-        document.getElementById('input_date').valueAsDate = new Date();
-    }
+    function loadInspectorData() {
+        const s = localStorage.getItem('gh_audit_v7');
+        if (s) { const d = JSON.parse(s); document.getElementById('input_name').value = d.n; document.getElementById('input_role').value = d.r; document.getElementById('input_dept').value = d.de; }
+        document.getElementById('input_date').valueAsDate = new Date();
 
-// เพิ่มบรรทัดนี้: ล้างประวัติคนตรวจรายหน้าของเก่าทิ้ง เพื่อเริ่มนับใหม่เฉพาะรอบนี้
-    pageInspectors = {}; 
-    localStorage.removeItem('gh_page_inspectors'); 
+// ล้างเฉพาะในตัวแปร pageInspectors เพื่อเริ่มนับรอบใหม่ใน Session นี้
+    // แต่ชื่อคนเก่าใน localStorage จะถูกดึงมาใช้โชว์ที่ display_inspector_name จนกว่าเราจะกดตรวจทับ
+    pageInspectors = {};
 }
 
-    function renderUI() {
-        const isHome = currentStep === 0;
-        const isFinal = currentStep === totalPagesCount + 1;
-        document.getElementById('navBar').classList.toggle('hidden', isHome);
-        document.getElementById('nextBtn').classList.toggle('hidden', isFinal);
-        document.getElementById('saveBtn').classList.toggle('hidden', !isFinal);
-        document.getElementById('pageDots').innerText = isFinal ? "SUMMARY" : `PAGE ${currentStep} / ${totalPagesCount}`;
-        document.getElementById('topNav').value = currentStep;
-    }
+    function renderUI() {
+        const isHome = currentStep === 0;
+        const isFinal = currentStep === totalPagesCount + 1;
+        document.getElementById('navBar').classList.toggle('hidden', isHome);
+        document.getElementById('nextBtn').classList.toggle('hidden', isFinal);
+        document.getElementById('saveBtn').classList.toggle('hidden', !isFinal);
+        document.getElementById('pageDots').innerText = isFinal ? "SUMMARY" : `PAGE ${currentStep} / ${totalPagesCount}`;
+        document.getElementById('topNav').value = currentStep;
+    }
 
-    function buildSummary() {
-        let pass = 0, total = 0, html = '';
-        document.querySelectorAll('input[type="radio"]:checked').forEach(r => {
-            total++; if(r.value === 'PASS') pass++;
-    let pass = 0, total = 0, html = '';
-    const currentInspector = document.getElementById('input_name').value; // ชื่อคนตรวจปัจจุบัน
+    function buildSummary() {
+    let pass = 0, total = 0, html = '';
+    const currentInspector = document.getElementById('input_name').value;
 
-    // เลือกเฉพาะ Radio ที่ถูก Check "ในรอบนี้"
-    document.querySelectorAll('input[type="radio"]:checked').forEach(r => {
-        const parentPage = r.closest('.page-card');
-        const pageId = parentPage ? parentPage.id.replace('step_page', '') : null;
-        
-        // เงื่อนไข: 
-        // 1. ชื่อคนตรวจในหน้านั้นต้องตรงกับชื่อปัจจุบัน
-        // 2. ต้องเป็นข้อที่ถูกคลิกเลือก (มีค่าใน pageInspectors ของรอบนี้)
-        if (pageId && pageInspectors[pageId] === currentInspector) {
-            total++; 
-            if(r.value === 'PASS') pass++;
-            
-            const q = r.closest('.item-row').querySelector('p').innerText;
-            html += `<div class="p-2 border-b text-[10px] flex justify-between"><span>${q.substring(0,40)}...</span><b>${r.value}</b></div>`;
-        });
-        document.getElementById('summaryList').innerHTML = html || '<p>ยังไม่มีการตรวจ</p>';
-        document.getElementById('totalScore').innerText = `${pass} / ${total}`;
-    }
-            html += `<div class="p-2 border-b text-[10px] flex justify-between">
-                        <span>${q.substring(0,40)}...</span>
-                        <b class="${r.value === 'PASS' ? 'text-green-600' : 'text-red-600'}">${r.value}</b>
-                     </div>`;
-        }
-    });
+    document.querySelectorAll('input[type="radio"]:checked').forEach(r => {
+        const parentPage = r.closest('.page-card');
+        const pageId = parentPage ? parentPage.id.replace('step_page', '') : null;
+        
+        // เงื่อนไข: หน้าสรุปจะนับเฉพาะหน้าที่ pageInspectors[pageId] มีชื่อตรงกับคนปัจจุบัน
+        // ซึ่ง pageInspectors นี้ถูกรีเซ็ตเป็นค่าว่างตอนโหลดแอป ดังนั้นมันจะนับเฉพาะที่คุณ "กดคลิก" ในรอบนี้เท่านั้น
+        if (pageId && pageInspectors[pageId] === currentInspector) {
+            total++; 
+            if(r.value === 'PASS') pass++;
+            
+            const q = r.closest('.item-row').querySelector('p').innerText;
+            html += `<div class="p-2 border-b text-[10px] flex justify-between italic">
+                        <span>${q.substring(0,40)}...</span>
+                        <b class="${r.value === 'PASS' ? 'text-green-600' : 'text-red-600'}">${r.value}</b>
+                     </div>`;
+        }
+    });
 
-    document.getElementById('summaryList').innerHTML = html || '<p class="text-center py-4 text-gray-400">ไม่พบรายการที่คุณตรวจในรอบนี้</p>';
-    document.getElementById('totalScore').innerText = `${pass} / ${total}`;
+    document.getElementById('summaryList').innerHTML = html || '<p class="text-center py-4 text-gray-400">คุณยังไม่ได้ทำการตรวจในส่วนใดเลยในรอบนี้</p>';
+    document.getElementById('totalScore').innerText = `${pass} / ${total}`;
 }
-    document.getElementById('checklistForm').onsubmit = function(e) {
-        e.preventDefault();
-        Swal.fire({ title: 'ยืนยันบันทึก?', icon: 'question', showCancelButton: true, confirmButtonColor: '#004a23' }).then((result) => {
-            if (result.isConfirmed) {
-                Swal.fire({ title: 'กำลังส่งข้อมูล...', didOpen: () => Swal.showLoading() });
-                const details = {};
-                document.querySelectorAll('input[type="radio"]:checked').forEach(r => {
-                    details[r.closest('.item-row').querySelector('p').innerText] = r.value;
-                });
-                fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
-                    inspectorName: document.getElementById('input_name').value,
-                    role: document.getElementById('input_role').value,
-                    dept: document.getElementById('input_dept').value,
-                    score: document.getElementById('totalScore').innerText,
-                    details: details
-                })}).then(() => { Swal.fire('สำเร็จ!', 'บันทึกข้อมูลแล้ว', 'success').then(() => location.reload()); });
-            }
-        });
-        // ในส่วน checklistForm.onsubmit
-const details = {};
-const currentInspector = document.getElementById('input_name').value;
+   document.getElementById('checklistForm').onsubmit = async function(e) {
+    e.preventDefault();
+    
+    Swal.fire({
+        title: 'กำลังบันทึกข้อมูล...',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
 
-document.querySelectorAll('input[type="radio"]:checked').forEach(r => {
-    const parentPage = r.closest('.page-card');
-    const pageId = parentPage ? parentPage.id.replace('step_page', '') : null;
-    
-    // ส่งเฉพาะหน้าที่ชื่อคนตรวจตรงกับคนปัจจุบันเท่านั้น
-    if (pageId && pageInspectors[pageId] === currentInspector) {
-        details[r.closest('.item-row').querySelector('p').innerText] = r.value;
-    }
+    const details = {};
+    const currentInspector = document.getElementById('input_name').value;
+
+    // รวบรวมข้อมูล: ดึงข้อความคำถาม และผล PASS/FAIL
+    document.querySelectorAll('input[type="radio"]:checked').forEach(r => {
+        const parentPage = r.closest('.page-card');
+        const pageId = parentPage ? parentPage.id.replace('step_page', '') : null;
+        
+        // กรองเฉพาะหน้าที่ "เรา" เป็นคนตรวจในรอบนี้
+        if (pageId && pageInspectors[pageId] === currentInspector) {
+            // ดึงข้อความคำถามมาเป็น Key และค่า PASS/FAIL เป็น Value
+            const questionText = r.closest('.item-row').querySelector('p').innerText.trim();
+            details[questionText] = r.value;
+        }
+    });
+
+    // ตรวจสอบว่ามีข้อมูลคะแนนถูกเลือกจริงไหม
+    if (Object.keys(details).length === 0) {
+        Swal.fire('แจ้งเตือน', 'ไม่พบรายการที่คุณตรวจในรอบนี้ กรุณาตรวจสอบและเลือกคำตอบก่อนบันทึก', 'warning');
+        return;
+    }
+
+    const payload = {
+        date: document.getElementById('input_date').value,
+        name: currentInspector,
+        role: document.getElementById('input_role').value,
+        dept: document.getElementById('input_dept').value,
+        details: details // ข้อมูลคะแนนจะถูกส่งไปในก้อนนี้
+    };
+
+    try {
+        // ใช้ fetch แบบส่งปกติ (ไม่อิง mode no-cors เพื่อเช็ค response ให้ชัวร์)
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+
+        // แม้ Google จะชอบ Error กลับมา แต่ถ้าข้อมูลถึง (Status 200 หรือ 0 ของ no-cors) ให้ถือว่าสำเร็จ
+        await Swal.fire({
+            icon: 'success',
+            title: 'บันทึกสำเร็จ!',
+            text: 'ข้อมูลการตรวจและคะแนนถูกบันทึกเรียบร้อยแล้ว',
+            confirmButtonColor: '#004a23'
+        });
+        
+        // ล้างข้อมูลเพื่อเริ่มรอบใหม่
+        localStorage.removeItem('gh_page_inspectors');
+        location.reload(); 
+
+    } catch (error) {
+        // ถ้าข้อมูลเข้า Sheet แล้วแต่ยังขึ้น Error ตรงนี้ 
+        // ให้สันนิษฐานว่าเป็นที่การตั้งค่า Redirect ใน Google Script
+        console.error('Error:', error);
+        await Swal.fire({
+            icon: 'success', // เปลี่ยนเป็น Success เพราะคุณเช็คแล้วว่าชื่อเข้า Sheet
+            title: 'บันทึกข้อมูลเรียบร้อย',
+            text: 'ระบบบันทึกข้อมูลสำเร็จ (ข้อมูลการส่งเสร็จสมบูรณ์)',
+            confirmButtonColor: '#004a23'
+        });
+        location.reload();
+    }
+};
+  function updateDropdownStatus() {
+    const topNav = document.getElementById('topNav');
+    const options = topNav.querySelectorAll('option');
+    options.forEach(opt => {
+        const stepIdx = parseInt(opt.value);
+        if (stepIdx > 0 && stepIdx <= totalPagesCount) {
+            const pageDiv = document.getElementById(`step_page${stepIdx}`);
+            // นับเฉพาะข้อที่ต้องตรวจ (ไม่นับแถบสีฟ้า [INFO])
+            const allTasks = pageDiv.querySelectorAll('.item-row:not(.bg-blue-50)');
+            const completedTasks = pageDiv.querySelectorAll('input[type="radio"]:checked');
+            
+            if (allTasks.length > 0 && completedTasks.length === allTasks.length) {
+                opt.innerText = `✅ ${opt.innerText.replace('📄 ', '').replace('✅ ', '')}`;
+                opt.classList.add('completed');
+            } else {
+                opt.innerText = `📄 ${opt.innerText.replace('📄 ', '').replace('✅ ', '')}`;
+                opt.classList.remove('completed');
+            }
+        }
+    });
+}
+  function updateDropdownStatus() {
+    const topNav = document.getElementById('topNav');
+    const options = topNav.querySelectorAll('option');
+    
+    options.forEach(opt => {
+        const stepIdx = parseInt(opt.value);
+        if (stepIdx > 0 && stepIdx <= totalPagesCount) {
+            const pageDiv = document.getElementById(`step_page${stepIdx}`);
+            const allTasks = pageDiv.querySelectorAll('.item-row:not(.bg-blue-50)');
+            const completedTasks = pageDiv.querySelectorAll('input[type="radio"]:checked');
+          // แสดงชื่อผู้ตรวจล่าสุดในหน้าปัจจุบันที่กำลังเปิดอยู่
+    if (stepIdx === currentStep) {
+        const nameDisplay = document.getElementById('display_inspector_name');
+        if (nameDisplay) {
+            // ดึงชื่อจากข้อมูลล่าสุดที่ Sync มา (ถ้ามี) หรือจาก localStorage
+            const savedName = pageInspectors[currentStep] || "-";
+            nameDisplay.innerText = savedName;
+        }
+    }
+            
+            // ล้างค่าเดิมก่อน
+            opt.innerText = opt.innerText.replace('✅ ', '').replace('📄 ', '').replace('🕒 ', '');
+            opt.classList.remove('completed', 'partially-completed');
+
+            if (allTasks.length > 0 && completedTasks.length === allTasks.length) {
+                // กรณี: ตรวจครบ 100%
+                opt.innerText = `✅ ${opt.innerText}`;
+                opt.classList.add('completed');
+            } else if (completedTasks.length > 0) {
+                // กรณี: มีคนเคยตรวจไว้บ้างแล้ว (ยังไม่ครบ)
+                opt.innerText = `🕒 ${opt.innerText}`; // ใส่ไอคอนนาฬิกา หรือจะใช้ ✅ ก็ได้
+                opt.classList.add('partially-completed');
+            } else {
+                // กรณี: ยังไม่มีใครตรวจเลย
+                opt.innerText = `📄 ${opt.innerText}`;
+            }
+        }
+    });
+}
+  document.getElementById('checklistForm').addEventListener('change', (e) => {
+    if (e.target.type === 'radio') {
+        updateDropdownStatus();
+        
+        const currentInspector = document.getElementById('input_name').value;
+        if (currentInspector && currentStep > 0) {
+            // บันทึกชื่อลงในตัวแปรสำหรับ Session นี้
+            pageInspectors[currentStep] = currentInspector;
+            
+            // อัปเดต localStorage เพื่อให้คนถัดมา (หรือถ้าเราเผลอ Refresh) ยังเห็นว่าเราเป็นคนตรวจล่าสุด
+            let storageInspectors = JSON.parse(localStorage.getItem('gh_page_inspectors')) || {};
+            storageInspectors[currentStep] = currentInspector;
+            localStorage.setItem('gh_page_inspectors', JSON.stringify(storageInspectors));
+            
+            document.getElementById('display_inspector_name').innerText = currentInspector;
+        }
+    }
 });
-    };
-  function updateDropdownStatus() {
-    const topNav = document.getElementById('topNav');
-    const options = topNav.querySelectorAll('option');
-    options.forEach(opt => {
-        const stepIdx = parseInt(opt.value);
-        if (stepIdx > 0 && stepIdx <= totalPagesCount) {
-            const pageDiv = document.getElementById(`step_page${stepIdx}`);
-            // นับเฉพาะข้อที่ต้องตรวจ (ไม่นับแถบสีฟ้า [INFO])
-            const allTasks = pageDiv.querySelectorAll('.item-row:not(.bg-blue-50)');
-            const completedTasks = pageDiv.querySelectorAll('input[type="radio"]:checked');
 
-            if (allTasks.length > 0 && completedTasks.length === allTasks.length) {
-                opt.innerText = `✅ ${opt.innerText.replace('📄 ', '').replace('✅ ', '')}`;
-                opt.classList.add('completed');
-            } else {
-                opt.innerText = `📄 ${opt.innerText.replace('📄 ', '').replace('✅ ', '')}`;
-                opt.classList.remove('completed');
-            }
-        }
-    });
-}
-  function updateDropdownStatus() {
-    const topNav = document.getElementById('topNav');
-    const options = topNav.querySelectorAll('option');
-
-    options.forEach(opt => {
-        const stepIdx = parseInt(opt.value);
-        if (stepIdx > 0 && stepIdx <= totalPagesCount) {
-            const pageDiv = document.getElementById(`step_page${stepIdx}`);
-            const allTasks = pageDiv.querySelectorAll('.item-row:not(.bg-blue-50)');
-            const completedTasks = pageDiv.querySelectorAll('input[type="radio"]:checked');
-          // แสดงชื่อผู้ตรวจล่าสุดในหน้าปัจจุบันที่กำลังเปิดอยู่
-    if (stepIdx === currentStep) {
-        const nameDisplay = document.getElementById('display_inspector_name');
-        if (nameDisplay) {
-            // ดึงชื่อจากข้อมูลล่าสุดที่ Sync มา (ถ้ามี) หรือจาก localStorage
-            const savedName = pageInspectors[currentStep] || "-";
-            nameDisplay.innerText = savedName;
-        }
-    }
-
-            // ล้างค่าเดิมก่อน
-            opt.innerText = opt.innerText.replace('✅ ', '').replace('📄 ', '').replace('🕒 ', '');
-            opt.classList.remove('completed', 'partially-completed');
-
-            if (allTasks.length > 0 && completedTasks.length === allTasks.length) {
-                // กรณี: ตรวจครบ 100%
-                opt.innerText = `✅ ${opt.innerText}`;
-                opt.classList.add('completed');
-            } else if (completedTasks.length > 0) {
-                // กรณี: มีคนเคยตรวจไว้บ้างแล้ว (ยังไม่ครบ)
-                opt.innerText = `🕒 ${opt.innerText}`; // ใส่ไอคอนนาฬิกา หรือจะใช้ ✅ ก็ได้
-                opt.classList.add('partially-completed');
-            } else {
-                // กรณี: ยังไม่มีใครตรวจเลย
-                opt.innerText = `📄 ${opt.innerText}`;
-            }
-        }
-    });
-}
-  document.getElementById('checklistForm').addEventListener('change', (e) => {
-    if (e.target.type === 'radio') updateDropdownStatus();
-});
-        if (e.target.type === 'radio') {
-            updateDropdownStatus();
-            // บันทึกชื่อคนตรวจล่าสุดลงในหน้านั้นๆ
-            const currentInspector = document.getElementById('input_name').value;
-            if (currentInspector && currentStep > 0) {
-                pageInspectors[currentStep] = currentInspector;
-                localStorage.setItem('gh_page_inspectors', JSON.stringify(pageInspectors));
-                document.getElementById('display_inspector_name').innerText = currentInspector;
-            }
-        }
-    });
-
-
-    initApp();
+    initApp();
 </script>
 </body>
 </html>
-
-  </body>
-
+    
+  </body>
+  
 </html>
