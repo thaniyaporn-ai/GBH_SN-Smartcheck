@@ -4,10 +4,10 @@
   <head>
     <meta charset="UTF-8">
     <title>GBH App V.4</title>
-    
+
 
   </head>
-    
+
   <body>
   <!DOCTYPE html>
 <html lang="th">
@@ -25,7 +25,7 @@
         .page-card { min-height: 80vh; display: none; flex-direction: column; }
         .page-card.active { display: flex; animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
+
         /* Dropdown Styling */
         optgroup { font-weight: bold; color: #004a23; background-color: #f0fdf4; font-style: normal; }
         option { color: #374151; background-color: white; padding: 8px; }
@@ -105,6 +105,7 @@ option.partially-completed {
                 </div>
             </div>
 
+            <div id="navBar" class="mt-auto pt-6 flex justify-between items-center border-t border-gray-100 hidden">
             <div id="navBar" class="mt-auto pt-10 flex justify-between items-center border-t border-gray-100 hidden relative">
                 <div class="w-full text-center absolute top-2 left-0">
                     <p class="text-[10px] text-gray-400">
@@ -120,6 +121,7 @@ option.partially-completed {
     </div>
 
 <script>
+    // --- 1. ข้อมูลเดิม 18 ข้อ (ห้ามเปลี่ยน) ---
     // เก็บชื่อผู้ตรวจสอบรายหน้า
     let pageInspectors = JSON.parse(localStorage.getItem('gh_page_inspectors')) || {};
 
@@ -147,12 +149,12 @@ option.partially-completed {
         try {
             const response = await fetch(SCRIPT_URL);
             const data = await response.json();
-            
+
             // นำข้อมูลจาก Sheet มาจัดกลุ่ม
             const remoteMapped = mapRemoteData(data.additionalTasks || []);
             // รวมร่างข้อมูล Local และ Remote
             const mergedData = mergeChecklists(localChecklist, remoteMapped);
-            
+
             renderApp(mergedData);
             loadInspectorData();
             if(data.latestSync) applySync(data.latestSync);
@@ -200,7 +202,7 @@ option.partially-completed {
         fullData.forEach(cat => {
             const group = document.createElement('optgroup');
             group.label = `📂 ${cat.category}`;
-            
+
             cat.subPages.forEach(page => {
                 const opt = document.createElement('option');
                 opt.value = idx; opt.innerText = `📄 ${page.title}`;
@@ -243,7 +245,7 @@ option.partially-completed {
     }
 
     function openZoom(src) { document.getElementById('zoomedImg').src = src; document.getElementById('zoomModal').classList.remove('hidden'); }
-    
+
     function applySync(latestSync) {
         document.querySelectorAll('.item-row').forEach(row => {
             const q = row.querySelector('p').innerText;
@@ -269,12 +271,15 @@ option.partially-completed {
         document.getElementById(getID(currentStep)).classList.remove('active');
         currentStep = target;
         document.getElementById(getID(currentStep)).classList.add('active');
+        if (currentStep === totalPagesCount + 1) buildSummary();
+        renderUI();
+        window.scrollTo(0,0);
+    }
 
-// ดึงจาก Storage มาโชว์เพื่อให้เห็นว่าใครเคยตรวจไว้ (นาย A)
-const storageInspectors = JSON.parse(localStorage.getItem('gh_page_inspectors')) || {};
-const savedName = storageInspectors[currentStep] || "-"; 
-const displayElement = document.getElementById('display_inspector_name');
-if (displayElement) displayElement.innerText = savedName;
+// ส่วนนี้จะดึงชื่อ "คนล่าสุด" ที่เคยตรวจหน้านี้มาโชว์ (แม้จะเป็นคนละคนกับปัจจุบัน)
+    const savedName = pageInspectors[currentStep] || "-"; 
+    const displayElement = document.getElementById('display_inspector_name');
+    if (displayElement) displayElement.innerText = savedName;
 
     if (currentStep === totalPagesCount + 1) buildSummary();
     renderUI();
@@ -294,10 +299,11 @@ if (displayElement) displayElement.innerText = savedName;
         const s = localStorage.getItem('gh_audit_v7');
         if (s) { const d = JSON.parse(s); document.getElementById('input_name').value = d.n; document.getElementById('input_role').value = d.r; document.getElementById('input_dept').value = d.de; }
         document.getElementById('input_date').valueAsDate = new Date();
+    }
 
-// ล้างเฉพาะในตัวแปร pageInspectors เพื่อเริ่มนับรอบใหม่ใน Session นี้
-    // แต่ชื่อคนเก่าใน localStorage จะถูกดึงมาใช้โชว์ที่ display_inspector_name จนกว่าเราจะกดตรวจทับ
-    pageInspectors = {};
+// เพิ่มบรรทัดนี้: ล้างประวัติคนตรวจรายหน้าของเก่าทิ้ง เพื่อเริ่มนับใหม่เฉพาะรอบนี้
+    pageInspectors = {}; 
+    localStorage.removeItem('gh_page_inspectors'); 
 }
 
     function renderUI() {
@@ -311,101 +317,72 @@ if (displayElement) displayElement.innerText = savedName;
     }
 
     function buildSummary() {
+        let pass = 0, total = 0, html = '';
+        document.querySelectorAll('input[type="radio"]:checked').forEach(r => {
+            total++; if(r.value === 'PASS') pass++;
     let pass = 0, total = 0, html = '';
-    const currentInspector = document.getElementById('input_name').value;
+    const currentInspector = document.getElementById('input_name').value; // ชื่อคนตรวจปัจจุบัน
 
+    // เลือกเฉพาะ Radio ที่ถูก Check "ในรอบนี้"
     document.querySelectorAll('input[type="radio"]:checked').forEach(r => {
         const parentPage = r.closest('.page-card');
         const pageId = parentPage ? parentPage.id.replace('step_page', '') : null;
         
-        // เงื่อนไข: หน้าสรุปจะนับเฉพาะหน้าที่ pageInspectors[pageId] มีชื่อตรงกับคนปัจจุบัน
-        // ซึ่ง pageInspectors นี้ถูกรีเซ็ตเป็นค่าว่างตอนโหลดแอป ดังนั้นมันจะนับเฉพาะที่คุณ "กดคลิก" ในรอบนี้เท่านั้น
+        // เงื่อนไข: 
+        // 1. ชื่อคนตรวจในหน้านั้นต้องตรงกับชื่อปัจจุบัน
+        // 2. ต้องเป็นข้อที่ถูกคลิกเลือก (มีค่าใน pageInspectors ของรอบนี้)
         if (pageId && pageInspectors[pageId] === currentInspector) {
             total++; 
             if(r.value === 'PASS') pass++;
             
             const q = r.closest('.item-row').querySelector('p').innerText;
-            html += `<div class="p-2 border-b text-[10px] flex justify-between italic">
+            html += `<div class="p-2 border-b text-[10px] flex justify-between"><span>${q.substring(0,40)}...</span><b>${r.value}</b></div>`;
+        });
+        document.getElementById('summaryList').innerHTML = html || '<p>ยังไม่มีการตรวจ</p>';
+        document.getElementById('totalScore').innerText = `${pass} / ${total}`;
+    }
+            html += `<div class="p-2 border-b text-[10px] flex justify-between">
                         <span>${q.substring(0,40)}...</span>
                         <b class="${r.value === 'PASS' ? 'text-green-600' : 'text-red-600'}">${r.value}</b>
                      </div>`;
         }
     });
 
-    document.getElementById('summaryList').innerHTML = html || '<p class="text-center py-4 text-gray-400">คุณยังไม่ได้ทำการตรวจในส่วนใดเลยในรอบนี้</p>';
+    document.getElementById('summaryList').innerHTML = html || '<p class="text-center py-4 text-gray-400">ไม่พบรายการที่คุณตรวจในรอบนี้</p>';
     document.getElementById('totalScore').innerText = `${pass} / ${total}`;
 }
-   document.getElementById('checklistForm').onsubmit = async function(e) {
-    e.preventDefault();
+    document.getElementById('checklistForm').onsubmit = function(e) {
+        e.preventDefault();
+        Swal.fire({ title: 'ยืนยันบันทึก?', icon: 'question', showCancelButton: true, confirmButtonColor: '#004a23' }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({ title: 'กำลังส่งข้อมูล...', didOpen: () => Swal.showLoading() });
+                const details = {};
+                document.querySelectorAll('input[type="radio"]:checked').forEach(r => {
+                    details[r.closest('.item-row').querySelector('p').innerText] = r.value;
+                });
+                fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({
+                    inspectorName: document.getElementById('input_name').value,
+                    role: document.getElementById('input_role').value,
+                    dept: document.getElementById('input_dept').value,
+                    score: document.getElementById('totalScore').innerText,
+                    details: details
+                })}).then(() => { Swal.fire('สำเร็จ!', 'บันทึกข้อมูลแล้ว', 'success').then(() => location.reload()); });
+            }
+        });
+        // ในส่วน checklistForm.onsubmit
+const details = {};
+const currentInspector = document.getElementById('input_name').value;
+
+document.querySelectorAll('input[type="radio"]:checked').forEach(r => {
+    const parentPage = r.closest('.page-card');
+    const pageId = parentPage ? parentPage.id.replace('step_page', '') : null;
     
-    Swal.fire({
-        title: 'กำลังบันทึกข้อมูล...',
-        allowOutsideClick: false,
-        didOpen: () => { Swal.showLoading(); }
-    });
-
-    const details = {};
-    const currentInspector = document.getElementById('input_name').value;
-
-    // รวบรวมข้อมูล: ดึงข้อความคำถาม และผล PASS/FAIL
-    document.querySelectorAll('input[type="radio"]:checked').forEach(r => {
-        const parentPage = r.closest('.page-card');
-        const pageId = parentPage ? parentPage.id.replace('step_page', '') : null;
-        
-        // กรองเฉพาะหน้าที่ "เรา" เป็นคนตรวจในรอบนี้
-        if (pageId && pageInspectors[pageId] === currentInspector) {
-            // ดึงข้อความคำถามมาเป็น Key และค่า PASS/FAIL เป็น Value
-            const questionText = r.closest('.item-row').querySelector('p').innerText.trim();
-            details[questionText] = r.value;
-        }
-    });
-
-    // ตรวจสอบว่ามีข้อมูลคะแนนถูกเลือกจริงไหม
-    if (Object.keys(details).length === 0) {
-        Swal.fire('แจ้งเตือน', 'ไม่พบรายการที่คุณตรวจในรอบนี้ กรุณาตรวจสอบและเลือกคำตอบก่อนบันทึก', 'warning');
-        return;
+    // ส่งเฉพาะหน้าที่ชื่อคนตรวจตรงกับคนปัจจุบันเท่านั้น
+    if (pageId && pageInspectors[pageId] === currentInspector) {
+        details[r.closest('.item-row').querySelector('p').innerText] = r.value;
     }
-
-    const payload = {
-        date: document.getElementById('input_date').value,
-        name: currentInspector,
-        role: document.getElementById('input_role').value,
-        dept: document.getElementById('input_dept').value,
-        details: details // ข้อมูลคะแนนจะถูกส่งไปในก้อนนี้
+});
     };
-
-    try {
-        // ใช้ fetch แบบส่งปกติ (ไม่อิง mode no-cors เพื่อเช็ค response ให้ชัวร์)
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            body: JSON.stringify(payload)
-        });
-
-        // แม้ Google จะชอบ Error กลับมา แต่ถ้าข้อมูลถึง (Status 200 หรือ 0 ของ no-cors) ให้ถือว่าสำเร็จ
-        await Swal.fire({
-            icon: 'success',
-            title: 'บันทึกสำเร็จ!',
-            text: 'ข้อมูลการตรวจและคะแนนถูกบันทึกเรียบร้อยแล้ว',
-            confirmButtonColor: '#004a23'
-        });
-        
-        // ล้างข้อมูลเพื่อเริ่มรอบใหม่
-        localStorage.removeItem('gh_page_inspectors');
-        location.reload(); 
-
-    } catch (error) {
-        // ถ้าข้อมูลเข้า Sheet แล้วแต่ยังขึ้น Error ตรงนี้ 
-        // ให้สันนิษฐานว่าเป็นที่การตั้งค่า Redirect ใน Google Script
-        console.error('Error:', error);
-        await Swal.fire({
-            icon: 'success', // เปลี่ยนเป็น Success เพราะคุณเช็คแล้วว่าชื่อเข้า Sheet
-            title: 'บันทึกข้อมูลเรียบร้อย',
-            text: 'ระบบบันทึกข้อมูลสำเร็จ (ข้อมูลการส่งเสร็จสมบูรณ์)',
-            confirmButtonColor: '#004a23'
-        });
-        location.reload();
-    }
-};
   function updateDropdownStatus() {
     const topNav = document.getElementById('topNav');
     const options = topNav.querySelectorAll('option');
@@ -416,7 +393,7 @@ if (displayElement) displayElement.innerText = savedName;
             // นับเฉพาะข้อที่ต้องตรวจ (ไม่นับแถบสีฟ้า [INFO])
             const allTasks = pageDiv.querySelectorAll('.item-row:not(.bg-blue-50)');
             const completedTasks = pageDiv.querySelectorAll('input[type="radio"]:checked');
-            
+
             if (allTasks.length > 0 && completedTasks.length === allTasks.length) {
                 opt.innerText = `✅ ${opt.innerText.replace('📄 ', '').replace('✅ ', '')}`;
                 opt.classList.add('completed');
@@ -430,7 +407,7 @@ if (displayElement) displayElement.innerText = savedName;
   function updateDropdownStatus() {
     const topNav = document.getElementById('topNav');
     const options = topNav.querySelectorAll('option');
-    
+
     options.forEach(opt => {
         const stepIdx = parseInt(opt.value);
         if (stepIdx > 0 && stepIdx <= totalPagesCount) {
@@ -446,7 +423,7 @@ if (displayElement) displayElement.innerText = savedName;
             nameDisplay.innerText = savedName;
         }
     }
-            
+
             // ล้างค่าเดิมก่อน
             opt.innerText = opt.innerText.replace('✅ ', '').replace('📄 ', '').replace('🕒 ', '');
             opt.classList.remove('completed', 'partially-completed');
@@ -467,29 +444,26 @@ if (displayElement) displayElement.innerText = savedName;
     });
 }
   document.getElementById('checklistForm').addEventListener('change', (e) => {
-    if (e.target.type === 'radio') {
-        updateDropdownStatus();
-        
-        const currentInspector = document.getElementById('input_name').value;
-        if (currentInspector && currentStep > 0) {
-            // บันทึกชื่อลงในตัวแปรสำหรับ Session นี้
-            pageInspectors[currentStep] = currentInspector;
-            
-            // อัปเดต localStorage เพื่อให้คนถัดมา (หรือถ้าเราเผลอ Refresh) ยังเห็นว่าเราเป็นคนตรวจล่าสุด
-            let storageInspectors = JSON.parse(localStorage.getItem('gh_page_inspectors')) || {};
-            storageInspectors[currentStep] = currentInspector;
-            localStorage.setItem('gh_page_inspectors', JSON.stringify(storageInspectors));
-            
-            document.getElementById('display_inspector_name').innerText = currentInspector;
-        }
-    }
+    if (e.target.type === 'radio') updateDropdownStatus();
 });
+        if (e.target.type === 'radio') {
+            updateDropdownStatus();
+            // บันทึกชื่อคนตรวจล่าสุดลงในหน้านั้นๆ
+            const currentInspector = document.getElementById('input_name').value;
+            if (currentInspector && currentStep > 0) {
+                pageInspectors[currentStep] = currentInspector;
+                localStorage.setItem('gh_page_inspectors', JSON.stringify(pageInspectors));
+                document.getElementById('display_inspector_name').innerText = currentInspector;
+            }
+        }
+    });
+
 
     initApp();
 </script>
 </body>
 </html>
-    
+
   </body>
-  
+
 </html>
