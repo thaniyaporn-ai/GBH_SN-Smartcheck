@@ -139,7 +139,7 @@ option.partially-completed {
         ]}
     ];
 
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyze6m8IvHjUC2Ramg_Kbqg6uyT7OsBJBodan-aPzwrCGYhQGyitFs20AVnC4GRVkZ0/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRZBw1BUSF1Bv-3yaqjBHbe_llspb3hmZwxbZ3jQaehKJavZaY6u11WT_9EWMv3g1d/exec';
     let currentStep = 0;
     let totalPagesCount = 0;
 
@@ -254,30 +254,43 @@ option.partially-completed {
         });
     }
   function applySync(latestSync) {
-    // ดึงชื่อผู้ตรวจล่าสุดมาแสดงในช่องกรอก
-    if (latestSync["Inspector"]) {
-        document.getElementById('input_name').value = latestSync["Inspector"];
-        document.getElementById('input_role').value = latestSync["Role"] || "";
-        document.getElementById('input_dept').value = latestSync["Dept"] || "";
-        
-        // อัปเดตชื่อในแถบบาร์ด้านล่าง
-        const display = document.getElementById('display_inspector_name');
-        if(display) display.innerText = latestSync["Inspector"];
-    }
+    console.log("Syncing data from Sheet...", latestSync);
 
-    // ติ๊กคำตอบที่คนก่อนหน้าทำไว้
+    // 1. วนลูปตรวจทุกข้อในหน้าแอป
     document.querySelectorAll('.item-row').forEach(row => {
         const p = row.querySelector('p');
         if (p) {
-            const qText = p.innerText.trim();
-            const lastVal = latestSync[qText]; // ต้องชื่อตรงกับหัวตารางใน Sheet1
+            const qText = p.innerText.trim().replace('ℹ️ ', '');
+            const lastVal = latestSync[qText]; 
+
             if (lastVal) {
                 const radio = row.querySelector(`input[value="${lastVal}"]`);
-                if (radio) radio.checked = true;
+                if (radio) {
+                    radio.checked = true;
+                    
+                    // 2. ดึงชื่อคนตรวจล่าสุดของหน้านี้ (ถ้ามีคอลัมน์ระบุชื่อแยกข้อ หรือใช้ชื่อรวม)
+                    // ในที่นี้เราจะอนุมานว่าถ้าข้อนี้ถูกตรวจ ชื่อผู้ตรวจล่าสุดใน Sheet คือคนทำ
+                    const parentPage = row.closest('.page-card');
+                    if (parentPage) {
+                        const pageId = parentPage.id.replace('step_page', '');
+                        // บันทึกชื่อจากคอลัมน์ Inspector ใน Sheet ลงในระบบจำหน้า
+                        if (latestSync["Inspector"]) {
+                            pageInspectors[pageId] = latestSync["Inspector"];
+                        }
+                    }
+                }
             }
         }
     });
-    updateDropdownStatus(); // ให้เครื่องหมาย ✅ ปรากฏใน Dropdown
+
+    // 3. อัปเดตสถานะ Dropdown (✅/🕒) และชื่อคนตรวจที่แถบล่างทันที
+    updateDropdownStatus();
+    
+    // แสดงชื่อคนตรวจล่าสุดในหน้าแรก (ถ้ามี)
+    if (latestSync["Inspector"]) {
+        const display = document.getElementById('display_inspector_name');
+        if(display) display.innerText = latestSync["Inspector"];
+    }
 }
 
     function jumpToStep(target) {
