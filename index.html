@@ -254,15 +254,30 @@ option.partially-completed {
         });
     }
   function applySync(latestSync) {
+    // ดึงชื่อผู้ตรวจล่าสุดมาแสดงในช่องกรอก
+    if (latestSync["Inspector"]) {
+        document.getElementById('input_name').value = latestSync["Inspector"];
+        document.getElementById('input_role').value = latestSync["Role"] || "";
+        document.getElementById('input_dept').value = latestSync["Dept"] || "";
+        
+        // อัปเดตชื่อในแถบบาร์ด้านล่าง
+        const display = document.getElementById('display_inspector_name');
+        if(display) display.innerText = latestSync["Inspector"];
+    }
+
+    // ติ๊กคำตอบที่คนก่อนหน้าทำไว้
     document.querySelectorAll('.item-row').forEach(row => {
-        const q = row.querySelector('p').innerText;
-        if (latestSync[q]) {
-            const radio = row.querySelector(`input[value="${latestSync[q]}"]`);
-            if (radio) radio.checked = true;
+        const p = row.querySelector('p');
+        if (p) {
+            const qText = p.innerText.trim();
+            const lastVal = latestSync[qText]; // ต้องชื่อตรงกับหัวตารางใน Sheet1
+            if (lastVal) {
+                const radio = row.querySelector(`input[value="${lastVal}"]`);
+                if (radio) radio.checked = true;
+            }
         }
     });
-    // เพิ่มบรรทัดนี้: เพื่อให้โหลดเสร็จแล้วเช็ค ✅ ทันที
-    updateDropdownStatus(); 
+    updateDropdownStatus(); // ให้เครื่องหมาย ✅ ปรากฏใน Dropdown
 }
 
     function jumpToStep(target) {
